@@ -1,0 +1,202 @@
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  padding: 6px 16px;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  background: white;
+  cursor: pointer;
+}
+
+.tab.actief {
+  background: #e63946;
+  color: white;
+  border-color: #e63946;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  padding: 1rem;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  transition: transform 0.15s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card img {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+}
+
+.card h3 {
+  font-size: 14px;
+  text-transform: capitalize;
+  margin: 6px 0 4px;
+}
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin: 2px;
+  text-transform: capitalize;
+}
+
+.type-fire      { background: #FDDFDF; color: #9C1A1A; }
+.type-water     { background: #D8EEFF; color: #0E4D8A; }
+.type-grass     { background: #DBF5D0; color: #2D6A1F; }
+.type-electric  { background: #FFF5CC; color: #7A5100; }
+.type-psychic   { background: #FFD6EC; color: #8B005D; }
+.type-poison    { background: #EDD5FF; color: #5B007E; }
+.type-normal    { background: #F0EFE8; color: #5A5A5A; }
+.type-flying    { background: #E0EEFF; color: #1A3C8A; }
+.type-bug       { background: #E8F5D0; color: #3A5A00; }
+.type-ground    { background: #F5E8C8; color: #7A4F00; }
+.type-rock      { background: #EDE8D0; color: #5A4A00; }
+.type-ice       { background: #D6F5F5; color: #005A5A; }
+.type-dragon    { background: #D5D0FF; color: #2A007A; }
+.type-ghost     { background: #D8D0EE; color: #2D0060; }
+.type-dark      { background: #D5D0C8; color: #2A2018; }
+.type-steel     { background: #E8E8F0; color: #3A3A5A; }
+.type-fairy     { background: #FFE0F0; color: #8B005A; }
+.type-fighting  { background: #FFD8C8; color: #7A1A00; }
+.detail-pagina {
+  padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.terug-knop {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+}
+
+.detail-header {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.detail-afbeelding {
+  width: 200px;
+  height: 200px;
+}
+
+.detail-naam {
+  text-transform: capitalize;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.detail-nummer {
+  color: #888;
+  margin: 4px 0 8px;
+}
+
+.detail-beschrijving {
+  margin-top: 1rem;
+  max-width: 400px;
+  line-height: 1.6;
+  color: #444;
+}
+
+.detail-secties {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.detail-sectie {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.detail-sectie h2 {
+  font-size: 1rem;
+  margin: 0 0 1rem;
+  color: #333;
+}
+
+.stat-rij {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stat-naam {
+  font-size: 12px;
+  width: 110px;
+  color: #666;
+}
+
+.stat-waarde {
+  font-size: 13px;
+  font-weight: 500;
+  width: 30px;
+  text-align: right;
+}
+
+.stat-balk-achtergrond {
+  flex: 1;
+  background: #f0f0f0;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.stat-balk {
+  height: 100%;
+  background: #e63946;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.sectie-label {
+  font-size: 12px;
+  color: #888;
+  margin: 8px 0 4px;
+}
+
+.moves-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.move-badge {
+  background: #f0f0f0;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  text-transform: capitalize;
+  color: #444;
+}
+
+.card {
+  cursor: pointer;
+}
