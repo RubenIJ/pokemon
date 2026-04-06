@@ -1,24 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import "./Pokemon.css";
+import TypeDiagram from "./TypeDiagram.jsx";
 
-const GENERATIES = [
-  { label: 'Gen 1', url: 'https://pokeapi.co/api/v2/generation/1' },
-  { label: 'Gen 2', url: 'https://pokeapi.co/api/v2/generation/2' },
-  { label: 'Gen 3', url: 'https://pokeapi.co/api/v2/generation/3' },
-  { label: 'Gen 4', url: 'https://pokeapi.co/api/v2/generation/4' },
-  { label: 'Gen 5', url: 'https://pokeapi.co/api/v2/generation/5' },
-  { label: 'Gen 6', url: 'https://pokeapi.co/api/v2/generation/6' },
-  { label: 'Gen 7', url: 'https://pokeapi.co/api/v2/generation/7' },
-  { label: 'Gen 8', url: 'https://pokeapi.co/api/v2/generation/8' },
-  { label: 'Gen 9', url: 'https://pokeapi.co/api/v2/generation/9' },
-];
-
-function PokemonCard({ pokemon }) {
-  const navigeer = useNavigate();
-
+function PokemonCard({ pokemon, onNavigeer, isFavoriet, onFavoriet }) {
   return (
-    <div className="card" onClick={() => navigeer(`/pokemon/${pokemon.id}`)}>
+    <div className="card" onClick={() => onNavigeer(pokemon.id)}>
+      <button
+        className={`favoriet-knop ${isFavoriet ? 'favoriet-actief' : ''}`}
+        onClick={gebeurtenis => {
+          gebeurtenis.stopPropagation();
+          onFavoriet();
+        }}
+      >
+        {isFavoriet ? <FaHeart /> : <FaRegHeart />}
+      </button>
       <img src={pokemon.sprites?.front_default} alt={pokemon.name} />
       <h3>{pokemon.name}</h3>
       <div>
@@ -32,64 +28,126 @@ function PokemonCard({ pokemon }) {
   );
 }
 
-
 function Pokemon() {
-
+  const [generaties, setGeneraties] = useState([]);
   const [actieveGen, setActieveGen] = useState(0);
   const [pokemonPerGen, setPokemonPerGen] = useState({});
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [favorieten, setFavorieten] = useState(
+    JSON.parse(localStorage.getItem('favorieten')) || []
+  );
 
+  useEffect(() => {
+    async function laadGeneraties() {
+      const response = await fetch('https://pokeapi.co/api/v2/generation');
+      const data = await response.json();
+
+      const generatiesMetLabel = data.results.map((generatie, index) => ({
+        label: `Gen ${index + 1}`,
+        url: generatie.url,
+      }));
+
+      setGeneraties([
+        ...generatiesMetLabel,
+        { label: 'Alle', url: null },
+        { label: 'Favorieten', url: 'favorieten' }
+      ]);
+    }
+
+    laadGeneraties();
+    laadGeneratie(0);
+  }, []);
+
+  useEffect(() => {
+    function updateFavorieten() {
+      setFavorieten(JSON.parse(localStorage.getItem('favorieten')) || []);
+    }
+
+    window.addEventListener('storage', updateFavorieten);
+    return () => window.removeEventListener('storage', updateFavorieten);
+  }, []);
 
   async function laadGeneratie(index) {
     const isAlGeladen = pokemonPerGen[index];
     if (isAlGeladen) return;
+    if (!generaties[index]?.url) return;
+    if (generaties[index]?.url == 'favorieten') return;
 
     setLoading(true);
 
-    const response = await fetch(GENERATIES[index].url);
+    const response = await fetch(generaties[index].url);
     const data = await response.json();
 
     const details = await Promise.all(
       data.pokemon_species.map(soort => {
-        const id = soort.url.split('/').filter(Boolean).pop(); // Haal het ID uit de URL
+        const id = soort.url.split('/').filter(Boolean).pop();
         return fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
           .then(response => response.json());
       })
     );
 
-    const gesorteerd = details.sort((a, b) => a.id - b.id); // Sorteer op ID (laagste eerst)
+    const gesorteerd = details.sort((a, b) => a.id - b.id);
 
-  
-    setPokemonPerGen(vorigeGeneraties => ({ ...vorigeGeneraties, [index]: gesorteerd }));
+    setPokemonPerGen(vorigeGeneraties => ({
+      ...vorigeGeneraties,
+      [index]: gesorteerd
+    }));
+
     setLoading(false);
   }
 
-  useEffect(() => {
-    laadGeneratie(0);
-  }, []);
-
   function handleTab(index) {
-    setActieveGen(index);  // Wissel naar het aangeklikte tabblad
-    setSearch('');          // Reset de zoekbalk
-    laadGeneratie(index);  // Laad de Pokémon als dat nog niet gebeurd is
+    setActieveGen(index);
+    setSearch('');
+
+    if (generaties[index]?.url == null) {
+      generaties.forEach((generatie, generatieIndex) => {
+        if (generatie.url && generatie.url !== 'favorieten') {
+          laadGeneratie(generatieIndex);
+        }
+      });
+    } else if (generaties[index]?.url !== 'favorieten') {
+      laadGeneratie(index);
+    }
   }
 
-const alleLadenPokemon = Object.values(pokemonPerGen).flat();
+  function toggleFavoriet(pokemon) {
+    const isAlFavoriet = favorieten.some(favoriet => favoriet.id == pokemon.id);
 
-const gefilterd = search
-  ? alleLadenPokemon.filter(pokemon =>
+    const nieuweFavorieten = isAlFavoriet
+      ? favorieten.filter(favoriet => favoriet.id !== pokemon.id)
+      : [...favorieten, pokemon];
+
+    setFavorieten(nieuweFavorieten);
+    localStorage.setItem('favorieten', JSON.stringify(nieuweFavorieten));
+    window.dispatchEvent(new Event('storage'));
+  }
+
+  const isFavorietenTabblad = generaties[actieveGen]?.url == 'favorieten';
+  const isAlleTabblad = generaties[actieveGen]?.url == null;
+
+  const huidigeLijst = isFavorietenTabblad
+    ? favorieten
+    : isAlleTabblad
+      ? Object.values(pokemonPerGen).flat().sort((a, b) => a.id - b.id)
+      : pokemonPerGen[actieveGen] || [];
+
+  const alleLadenPokemon = Object.values(pokemonPerGen).flat();
+
+  const gefilterd = search
+    ? alleLadenPokemon.filter(pokemon =>
       pokemon.name.includes(search.toLowerCase())
     )
-  : pokemonPerGen[actieveGen] || [];
+    : huidigeLijst;
 
   return (
     <>
       <div className="tabs">
-        {GENERATIES.map((generatie, index) => (
+        {generaties.map((generatie, index) => (
           <button
             key={index}
-            className={`tab ${actieveGen === index ? 'actief' : ''}`}
+            className={`tab ${actieveGen == index ? 'actief' : ''}`}
             onClick={() => handleTab(index)}
           >
             {generatie.label}
@@ -104,15 +162,25 @@ const gefilterd = search
         onChange={gebeurtenis => setSearch(gebeurtenis.target.value)}
       />
 
-      {loading ? (
-        <p>Laden...</p>
-      ) : (
-        <div className="grid">
-          {gefilterd.map(pokemon => (
-            <PokemonCard key={pokemon.id} pokemon={pokemon} />
-          ))}
-        </div>
-      )}
+      <div className="pagina-layout">
+        {loading ? (
+          <p>Laden...</p>
+        ) : (
+          <div className="grid">
+            {gefilterd.map(pokemon => (
+              <PokemonCard
+                key={pokemon.id}
+                pokemon={pokemon}
+                onNavigeer={(id) => window.location.href = `/pokemon/${id}`}
+                isFavoriet={favorieten.some(favoriet => favoriet.id == pokemon.id)}
+                onFavoriet={() => toggleFavoriet(pokemon)}
+              />
+            ))}
+          </div>
+        )}
+
+        <TypeDiagram pokemonLijst={Object.values(pokemonPerGen).flat()} />
+      </div>
     </>
   );
 }
