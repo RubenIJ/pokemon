@@ -34,9 +34,7 @@ function TypeDiagram({ pokemonLijst }) {
                         data={data}
                         cx="50%" // Center X
                         cy="50%" // Center Y
-                        innerRadius={60} // Maakt er een 'Donut' van (optioneel)
                         outerRadius={100}
-                        paddingAngle={5}
                         dataKey="value"
                     >
                         {data.map((entry) => (
