@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import "./Pokemon.css";
 import TypeDiagram from "../components/TypeDiagram.jsx";
+import PokemonCard from "../components/PokemonCard.jsx";
 
 
 function Pokemon() {

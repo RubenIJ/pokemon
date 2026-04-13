@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
-import "./Pokemon.css";
+import "../pages/Pokemon.css";
 
 const TYPE_CHART = {
   fire: { sterk_tegen: ['grass', 'ice', 'bug', 'steel'], zwak_tegen: ['water', 'rock', 'fire'] },
