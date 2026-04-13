@@ -1,32 +1,7 @@
 import { useState, useEffect } from 'react';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import "./Pokemon.css";
-import TypeDiagram from "./TypeDiagram.jsx";
+import TypeDiagram from "../components/TypeDiagram.jsx";
 
-function PokemonCard({ pokemon, onNavigeer, isFavoriet, onFavoriet }) {
-  return (
-    <div className="card" onClick={() => onNavigeer(pokemon.id)}>
-      <button
-        className={`favoriet-knop ${isFavoriet ? 'favoriet-actief' : ''}`}
-        onClick={gebeurtenis => {
-          gebeurtenis.stopPropagation();
-          onFavoriet();
-        }}
-      >
-        {isFavoriet ? <FaHeart /> : <FaRegHeart />}
-      </button>
-      <img src={pokemon.sprites?.front_default} alt={pokemon.name} />
-      <h3>{pokemon.name}</h3>
-      <div>
-        {pokemon.types.map(type => (
-          <span key={type.type.name} className={`badge type-${type.type.name}`}>
-            {type.type.name}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function Pokemon() {
   const [generaties, setGeneraties] = useState([]);
@@ -40,12 +15,12 @@ function Pokemon() {
 
   useEffect(() => {
     async function laadGeneraties() {
-      const response = await fetch('https://pokeapi.co/api/v2/generation');
-      const data = await response.json();
+      const response = await fetch('https://pokeapi.co/api/v2/generation'); //wacht op antwoord
+      const data = await response.json(); // zet antwoord in json()
 
-      const generatiesMetLabel = data.results.map((generatie, index) => ({
+      const generatiesMetLabel = data.results.map((generatie, index) => ({ // Map over de data voor de links voor de generaties
         label: `Gen ${index + 1}`,
-        url: generatie.url,
+        url: generatie.url, 
       }));
 
       setGeneraties([
@@ -61,18 +36,18 @@ function Pokemon() {
 
   useEffect(() => {
     function updateFavorieten() {
-      setFavorieten(JSON.parse(localStorage.getItem('favorieten')) || []);
+      setFavorieten(JSON.parse(localStorage.getItem('favorieten')) || []); // haal de favorieten op uit de opgeslagen data
     }
 
     window.addEventListener('storage', updateFavorieten);
-    return () => window.removeEventListener('storage', updateFavorieten);
+    return () => window.removeEventListener('storage', updateFavorieten); // houd in de gaten of er een favorieten word verwijderd of toegevoegd
   }, []);
 
   async function laadGeneratie(index) {
     const isAlGeladen = pokemonPerGen[index];
     if (isAlGeladen) return;
     if (!generaties[index]?.url) return;
-    if (generaties[index]?.url == 'favorieten') return;
+    if (generaties[index]?.url == 'favorieten') return; // checkt of de data al eens eerder is geladen zodat hij geen nieuwe API call hoeft te doen
 
     setLoading(true);
 
@@ -81,7 +56,7 @@ function Pokemon() {
 
     const details = await Promise.all(
       data.pokemon_species.map(soort => {
-        const id = soort.url.split('/').filter(Boolean).pop();
+        const id = soort.url.split('/').filter(Boolean).pop(); // sliced de API URL en haalt de juiste ID eruit voor de foto
         return fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
           .then(response => response.json());
       })

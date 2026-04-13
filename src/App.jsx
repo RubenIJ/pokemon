@@ -3,7 +3,7 @@ import { Link, Routes, Route } from 'react-router';
 import Home from './pages/Home.jsx';
 import Test from './pages/Test.jsx';
 import Pokemon from './pages/Pokemon.jsx';
-      import PokemonDetail from './pages/PokemonDetail.jsx';
+      import PokemonDetail from './components/PokemonDetail.jsx';
 
 
 const personen = [
