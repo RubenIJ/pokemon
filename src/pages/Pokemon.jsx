@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import "./Pokemon.css";
 import TypeDiagram from "../components/TypeDiagram.jsx";
 import PokemonCard from "../components/PokemonCard.jsx";
-
+import ZoekBalk from "../components/ZoekBalk.jsx"; // Nieuwe import
 
 function Pokemon() {
   const [generaties, setGeneraties] = useState([]);
@@ -16,10 +16,10 @@ function Pokemon() {
 
   useEffect(() => {
     async function laadGeneraties() {
-      const response = await fetch('https://pokeapi.co/api/v2/generation'); //wacht op antwoord
-      const data = await response.json(); // zet antwoord in json()
+      const response = await fetch('https://pokeapi.co/api/v2/generation');
+      const data = await response.json();
 
-      const generatiesMetLabel = data.results.map((generatie, index) => ({ // Map over de data voor de links voor de generaties
+      const generatiesMetLabel = data.results.map((generatie, index) => ({
         label: `Gen ${index + 1}`,
         url: generatie.url, 
       }));
@@ -37,51 +37,38 @@ function Pokemon() {
 
   useEffect(() => {
     function updateFavorieten() {
-      setFavorieten(JSON.parse(localStorage.getItem('favorieten')) || []); // haal de favorieten op uit de opgeslagen data
+      setFavorieten(JSON.parse(localStorage.getItem('favorieten')) || []);
     }
-
     window.addEventListener('storage', updateFavorieten);
-    return () => window.removeEventListener('storage', updateFavorieten); // houd in de gaten of er een favorieten word verwijderd of toegevoegd
+    return () => window.removeEventListener('storage', updateFavorieten);
   }, []);
 
   async function laadGeneratie(index) {
     const isAlGeladen = pokemonPerGen[index];
-    if (isAlGeladen) return;
-    if (!generaties[index]?.url) return;
-    if (generaties[index]?.url == 'favorieten') return; // checkt of de data al eens eerder is geladen zodat hij geen nieuwe API call hoeft te doen
+    if (isAlGeladen || !generaties[index]?.url || generaties[index]?.url === 'favorieten') return;
 
     setLoading(true);
-
     const response = await fetch(generaties[index].url);
     const data = await response.json();
 
     const details = await Promise.all(
       data.pokemon_species.map(soort => {
-        const id = soort.url.split('/').filter(Boolean).pop(); // sliced de API URL en haalt de juiste ID eruit voor de foto
-        return fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
-          .then(response => response.json());
+        const id = soort.url.split('/').filter(Boolean).pop();
+        return fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then(res => res.json());
       })
     );
 
     const gesorteerd = details.sort((a, b) => a.id - b.id);
-
-    setPokemonPerGen(vorigeGeneraties => ({
-      ...vorigeGeneraties,
-      [index]: gesorteerd
-    }));
-
+    setPokemonPerGen(prev => ({ ...prev, [index]: gesorteerd }));
     setLoading(false);
   }
 
   function handleTab(index) {
     setActieveGen(index);
     setSearch('');
-
     if (generaties[index]?.url == null) {
-      generaties.forEach((generatie, generatieIndex) => {
-        if (generatie.url && generatie.url !== 'favorieten') {
-          laadGeneratie(generatieIndex);
-        }
+      generaties.forEach((gen, i) => {
+        if (gen.url && gen.url !== 'favorieten') laadGeneratie(i);
       });
     } else if (generaties[index]?.url !== 'favorieten') {
       laadGeneratie(index);
@@ -89,10 +76,9 @@ function Pokemon() {
   }
 
   function toggleFavoriet(pokemon) {
-    const isAlFavoriet = favorieten.some(favoriet => favoriet.id == pokemon.id);
-
+    const isAlFavoriet = favorieten.some(f => f.id === pokemon.id);
     const nieuweFavorieten = isAlFavoriet
-      ? favorieten.filter(favoriet => favoriet.id !== pokemon.id)
+      ? favorieten.filter(f => f.id !== pokemon.id)
       : [...favorieten, pokemon];
 
     setFavorieten(nieuweFavorieten);
@@ -100,7 +86,7 @@ function Pokemon() {
     window.dispatchEvent(new Event('storage'));
   }
 
-  const isFavorietenTabblad = generaties[actieveGen]?.url == 'favorieten';
+  const isFavorietenTabblad = generaties[actieveGen]?.url === 'favorieten';
   const isAlleTabblad = generaties[actieveGen]?.url == null;
 
   const huidigeLijst = isFavorietenTabblad
@@ -109,12 +95,8 @@ function Pokemon() {
       ? Object.values(pokemonPerGen).flat().sort((a, b) => a.id - b.id)
       : pokemonPerGen[actieveGen] || [];
 
-  const alleLadenPokemon = Object.values(pokemonPerGen).flat();
-
   const gefilterd = search
-    ? alleLadenPokemon.filter(pokemon =>
-      pokemon.name.includes(search.toLowerCase())
-    )
+    ? Object.values(pokemonPerGen).flat().filter(p => p.name.includes(search.toLowerCase()))
     : huidigeLijst;
 
   return (
@@ -123,7 +105,7 @@ function Pokemon() {
         {generaties.map((generatie, index) => (
           <button
             key={index}
-            className={`tab ${actieveGen == index ? 'actief' : ''}`}
+            className={`tab ${actieveGen === index ? 'actief' : ''}`}
             onClick={() => handleTab(index)}
           >
             {generatie.label}
@@ -131,12 +113,7 @@ function Pokemon() {
         ))}
       </div>
 
-      <input
-        type="text"
-        placeholder="Zoek een Pokémon..."
-        value={search}
-        onChange={gebeurtenis => setSearch(gebeurtenis.target.value)}
-      />
+      <ZoekBalk waarde={search} onChange={setSearch} />
 
       <div className="pagina-layout">
         {loading ? (
@@ -147,14 +124,12 @@ function Pokemon() {
               <PokemonCard
                 key={pokemon.id}
                 pokemon={pokemon}
-                onNavigeer={(id) => window.location.href = `/pokemon/${id}`}
-                isFavoriet={favorieten.some(favoriet => favoriet.id == pokemon.id)}
+                isFavoriet={favorieten.some(f => f.id === pokemon.id)}
                 onFavoriet={() => toggleFavoriet(pokemon)}
               />
             ))}
           </div>
         )}
-
         <TypeDiagram pokemonLijst={Object.values(pokemonPerGen).flat()} />
       </div>
     </>
