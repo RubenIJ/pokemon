@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import "./Pokemon.css";
 import TypeDiagram from "../components/TypeDiagram.jsx";
 import PokemonCard from "../components/PokemonCard.jsx";
-import ZoekBalk from "../components/ZoekBalk.jsx"; // Nieuwe import
+import ZoekBalk from "../components/ZoekBalk.jsx";
 
 function Pokemon() {
   const [generaties, setGeneraties] = useState([]);
